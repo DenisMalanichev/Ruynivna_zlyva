@@ -1,12 +1,11 @@
 package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.scenes.scene2d.Touchable;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-
-import java.util.Scanner;
 
 
 public class Main implements Screen {
@@ -14,9 +13,10 @@ public class Main implements Screen {
     private ScreenManager manager;
     private Texture moreButtonTexture;
     private Cell[][] cells;
-    private int length;
-    private int dropsCount;
+    private int length = 10;
+    private int dropsCount = 50;
     private int maxDepth = 0;
+    private OrthographicCamera camera;
 
     public Main(ScreenManager manager) {
         this.manager = manager;
@@ -24,13 +24,12 @@ public class Main implements Screen {
 
     @Override
     public void show() {
+
+        camera = new OrthographicCamera();
+        camera.setToOrtho(false, 1500, 1000);
+
         moreButtonTexture = new Texture(Gdx.files.internal("visualizeButton.jpg"));
         /** отримуємо параметри*/
-         Scanner scanner = new Scanner(System.in);
-         System.out.println("Enter num of cells");
-         length = scanner.nextInt();
-         System.out.println("Enter num of drops");
-         dropsCount = scanner.nextInt();
          cells = new Cell[length][length];
 
         /** ініціалізурємо поле length на length*/
@@ -58,6 +57,9 @@ public class Main implements Screen {
 
     @Override
     public void render(float delta) {
+        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
         if(Gdx.input.getX() >= 0 && Gdx.input.getX() <= moreButtonTexture.getWidth() && Gdx.input.getY() >= 0 && 1000 - Gdx.input.getY() <= moreButtonTexture.getHeight()
                 && Gdx.input.isTouched()) {
             this.dispose();
@@ -66,6 +68,65 @@ public class Main implements Screen {
         manager.batch.begin();
 
         manager.batch.draw(moreButtonTexture, 0, 0);
+        manager.font.getData().setScale(2);
+        manager.font.setColor(1,1,1,1);
+        manager.font.draw(manager.batch, "How to deal with this program?", 10, 950);
+        manager.font.draw(manager.batch, "You need to enter number of cells in columns and rows and number of drops", 10, 900);
+        manager.font.draw(manager.batch, "You are about to use " + length + " cells in every column and row" , 10, 850);
+        manager.font.draw(manager.batch, "You are about to use " + dropsCount +" drops", 10, 800);
+        
+
+        if(Gdx.input.getX() >= 1050 && Gdx.input.getX() <= 1100 && 1000 - Gdx.input.getY() >= 800 && 1000 - Gdx.input.getY() <= 850) {
+            manager.font.setColor(0, 1, 1, 1);
+            manager.font.draw(manager.batch, "edit", 1050, 850);
+            if(Gdx.input.isTouched()){
+                Input.TextInputListener textListener = new Input.TextInputListener()
+                {
+                    @Override
+                    public void input(String input)
+                    {
+                       length = Integer.parseInt(input);
+                       camera.update();
+                    }
+
+                    @Override
+                    public void canceled()
+                    {
+                    }
+                };
+
+                Gdx.input.getTextInput(textListener, "Cells: ", "10", "");
+
+            }
+        }else{
+            manager.font.setColor(0, 0, 1, 1);
+            manager.font.draw(manager.batch, "edit", 1050, 850);
+        }
+
+        if(Gdx.input.getX() >= 1050 && Gdx.input.getX() <= 1100 && 1000 - Gdx.input.getY() >= 750 && 1000 - Gdx.input.getY() <= 800) {
+            manager.font.setColor(0, 1, 1, 1);
+            manager.font.draw(manager.batch, "edit", 1050, 800);
+            if(Gdx.input.isTouched()){
+                Input.TextInputListener textListener = new Input.TextInputListener()
+                {
+                    @Override
+                    public void input(String input)
+                    {
+                        dropsCount = Integer.parseInt(input);
+                    }
+
+                    @Override
+                    public void canceled()
+                    {
+                    }
+                };
+
+                Gdx.input.getTextInput(textListener, "Drops: ", "50", "");
+            }
+        }else{
+            manager.font.setColor(0, 0, 1, 1);
+            manager.font.draw(manager.batch, "edit", 1050, 800);
+        }
 
         manager.batch.end();
     }
@@ -94,4 +155,6 @@ public class Main implements Screen {
     public void dispose() {
         moreButtonTexture.dispose();
     }
+
+
 }

@@ -79,6 +79,8 @@ public class Visualization implements Screen {
 
 
 		manager.batch.begin();
+		manager.font.getData().setScale(1);
+		manager.font.setColor(1,1,1,1);
 		manager.batch.draw(backButtonTexture, 1500-backButtonTexture.getWidth(), 1000 - backButtonTexture.getHeight());
 		for(int i =0; i<100; i+=10){
 			manager.font.draw(manager.batch, ""+i, 1000 + i*5, 450);
