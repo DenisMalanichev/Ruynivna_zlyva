@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 
 import java.awt.*;
+import java.util.Arrays;
 
 
 public class Main implements Screen {
@@ -20,11 +21,13 @@ public class Main implements Screen {
     private Rectangle dropRec;
     private Texture drop2;
     private Rectangle dropRec2;
+    private int density = 0;
+    private boolean isDensity = false;
+    int chance = 1;
 
     public Main(ScreenManager manager) {
         this.manager = manager;
     }
-
 
     public void createCells() {
 
@@ -34,7 +37,7 @@ public class Main implements Screen {
         /** ініціалізурємо поле length на length*/
         for (int x = 0; x < cells.length; x++) {
             for (int y = 0; y < cells.length; y++) {
-                cells[x][y] = new Cell(0, x, y, length);
+                cells[x][y] = new Cell(0, x, y, length, chance);
             }
         }
         /** cтворюємо краплі*/
@@ -63,15 +66,17 @@ public class Main implements Screen {
             /** ініціалізурємо поле length на length*/
             for (int x = 0; x < cells.length; x++) {
                 for (int y = 0; y < cells.length; y++) {
-                    cells[x][y] = new Cell(0, x, y, length);
+                    cells[x][y] = new Cell(0, x, y, length, chance);
                 }
             }
+            /** створюємо краплі*/
             for (int i = 0; i < dropsCount; ++i) {
                 int x = (int) (Math.random() * length - 1);
                 int y = (int) (Math.random() * length - 1);
                 Drop drop = new Drop(x, y);
                 drop.corruption(cells[x][y], cells);
             }
+            /** рахуємо ями*/
             for (int x = 0; x < cells.length; x++) {
                 for (int y = 0; y < cells.length; y++) {
                     if(cells[x][y].getDepth() > 0)
@@ -99,6 +104,7 @@ public class Main implements Screen {
         manager.batch.draw(drop2, dropRec2.x, dropRec2.y);
         manager.batch.setColor(1,1,1, 1);
     }
+
     @Override
     public void show() {
         drop = new Texture(Gdx.files.internal("drop.png"));
@@ -117,21 +123,94 @@ public class Main implements Screen {
         Gdx.gl.glClearColor(0, 0, 0.15f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-
         manager.batch.begin();
 
         drawDrops();
+
+        if(Gdx.input.getX() >= 1050 && Gdx.input.getX() <= 1100 && 1000 - Gdx.input.getY() >= 700 &&  1000 - Gdx.input.getY() <= 750){
+            manager.font.setColor(0, 1, 1, 1);
+            manager.font.draw(manager.batch, "use", 1050, 750);
+            if(Gdx.input.isTouched()){
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                final Input.TextInputListener textListener = new Input.TextInputListener()
+                {
+                    @Override
+                    public void input(String input)
+                    {
+                        isDensity = true;
+                        density = Integer.parseInt(input);
+                        dropsCount = density*length*length;
+                    }
+
+                    @Override
+                    public void canceled()
+                    {
+                    }
+                };
+
+                Gdx.input.getTextInput(textListener, "Density: ", "0", "");
+
+            }
+        }else {
+            manager.font.setColor(0, 0, 1, 1);
+            manager.font.draw(manager.batch, "use", 1050, 750);
+        }
+        if(Gdx.input.getX() >= 1050 && Gdx.input.getX() <= 1100 && 1000 - Gdx.input.getY() >= 650 && 1000 - Gdx.input.getY() <= 700){
+            manager.font.setColor(0, 1, 1, 1);
+            manager.font.draw(manager.batch, "use", 1050, 700);
+            if(Gdx.input.isTouched()){
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                final Input.TextInputListener textListener = new Input.TextInputListener()
+                {
+                    @Override
+                    public void input(String input)
+                    {
+                        chance = Integer.parseInt(input);
+                    }
+
+                    @Override
+                    public void canceled()
+                    {
+                    }
+                };
+
+                Gdx.input.getTextInput(textListener, "Chance: ", "0", "");
+
+            }
+        }else {
+            manager.font.setColor(0, 0, 1, 1);
+            manager.font.draw(manager.batch, "use", 1050, 700);
+        }
 
         if(Gdx.input.getX() >= 0 && Gdx.input.getX() <= 100 && Gdx.input.getY() >= 0 && 1000 - Gdx.input.getY() <= 50){
             manager.font.setColor(0, 1, 1, 1);
             manager.font.draw(manager.batch, "Visualize", 10, 40);
                  if(Gdx.input.isTouched()) {
                      createCells();
-                     manager.setScreen(new Visualization(cells, dropsCount, maxDepth, manager, tests()));
+                     manager.setScreen(new Visualization(cells, dropsCount, maxDepth, manager, tests(), density, chance));
                  }
         }else {
             manager.font.setColor(0, 0, 1, 1);
             manager.font.draw(manager.batch, "Visualize", 10, 40);
+        }
+
+        if(Gdx.input.getX() >= Gdx.graphics.getWidth() - 130 && Gdx.input.getX() <= Gdx.graphics.getWidth()- 20 && Gdx.input.getY() >= 0 && 1000 - Gdx.input.getY() <= 50) {
+            manager.font.setColor(0, 1, 1, 1);
+            manager.font.draw(manager.batch, "Problem", Gdx.graphics.getWidth() - 130, 40);
+            if(Gdx.input.isTouched()) {
+                manager.setScreen(new Problem(manager));
+            }
+        }else{
+            manager.font.setColor(0, 0, 1, 1);
+            manager.font.draw(manager.batch, "Problem", Gdx.graphics.getWidth() - 130, 40);
         }
 
         manager.font.getData().setScale(2);
@@ -139,26 +218,43 @@ public class Main implements Screen {
         manager.font.draw(manager.batch, "How to deal with this program?", 10, 950);
         manager.font.draw(manager.batch, "You need to enter number of cells in columns and rows and number of drops", 10, 900);
         manager.font.draw(manager.batch, "You are about to use " + length + " cells in every column and row" , 10, 850);
-        manager.font.draw(manager.batch, "You are about to use " + dropsCount +" drops", 10, 800);
+        if(isDensity){
+            manager.font.draw(manager.batch, "You are about to use " + "---" + " drops", 10, 800);
+        }else {
+            manager.font.draw(manager.batch, "You are about to use " + dropsCount + " drops", 10, 800);
+        }
 
+        if(isDensity){
+            manager.font.draw(manager.batch, "You are about to use " + density + " density", 10, 750);
+        }else {
+            manager.font.draw(manager.batch, "You are about to use " + "---" + " density", 10, 750);
+        }
+        manager.font.getData().setScale(1);
+        manager.font.draw(manager.batch, "(Note that you cant use drops count and density in one time)", 1100, 740);
+        manager.font.getData().setScale(2);
+
+        manager.font.draw(manager.batch, "Use custom chance for drop to dissolve", 10, 700);
 
         if(Gdx.input.getX() >= 1050 && Gdx.input.getX() <= 1100 && 1000 - Gdx.input.getY() >= 800 && 1000 - Gdx.input.getY() <= 850) {
             manager.font.setColor(0, 1, 1, 1);
             manager.font.draw(manager.batch, "edit", 1050, 850);
             if(Gdx.input.isTouched()){
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 final Input.TextInputListener textListener = new Input.TextInputListener()
                 {
                     @Override
                     public void input(String input)
                     {
                        length = Integer.parseInt(input);
-
                     }
 
                     @Override
                     public void canceled()
                     {
-                        System.out.println("Canceled");
                     }
                 };
 
@@ -174,6 +270,11 @@ public class Main implements Screen {
             manager.font.setColor(0, 1, 1, 1);
             manager.font.draw(manager.batch, "edit", 1050, 800);
             if(Gdx.input.isTouched()){
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 Input.TextInputListener textListener = new Input.TextInputListener()
                 {
                     @Override

@@ -7,11 +7,13 @@ public class Cell {
     int depth;
     int x_axis;
     int y_axis;
-    public Cell(int depth, int x_axis, int y_axis, int length){
+    int chance;
+    public Cell(int depth, int x_axis, int y_axis, int length, int chance){
         this.depth = depth;
         this.x_axis = x_axis;
         this.y_axis = y_axis;
         this.length = length;
+        this.chance = chance;
     }
 
     public ArrayList<Cell> pits(Cell cells[][]){
@@ -25,8 +27,14 @@ public class Cell {
                 if(cells[x][y].getDepth() >= depth){
                     cellsR.add(cells[x][y]);
                 }
+                if(cells[x][y].x_axis == x_axis && cells[x][y].y_axis == y_axis){
+                    for(int i =0; i < chance; ++i){
+                        cellsR.add(cells[x][y]);
+                    }
+                }
             }
         }
+
         return cellsR;
     }
 
